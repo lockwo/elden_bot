@@ -26,11 +26,9 @@ for i in range(1000):
 
 	keys = index_to_key(ins[i - init])
 	print(keys)
-	cv2.imshow('test', images[i - init])
+	img = images[i - init]
+	cv2.imshow('test', img)
 	#input()
 	if cv2.waitKey(25) & 0xFF == ord('q'):
 		cv2.destroyAllWindows()
 		break
-
-
-
