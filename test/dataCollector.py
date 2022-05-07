@@ -74,6 +74,11 @@ if __name__ == '__main__':
     #ratio =  width / 2048
     new_height = 138 #int(1152 * ratio)
     images = np.zeros(shape=(save_batch_size, new_height, width), dtype=np.uint8)
+    left=908
+    down=495
+    width2=8
+    height=1067
+    
     time.sleep(5)
     init = time.time()
     with mss.mss() as sct:
@@ -85,7 +90,14 @@ if __name__ == '__main__':
 
                 # Get raw pixels from the screen, save it to a Numpy array
                 img = np.array(sct.grab(monitor))
-
+                
+                img2=img[left:left+width,down:down+height]
+                ret,threshb = cv2.threshold(img2[:,:,0],190,255,cv2.THRESH_BINARY)
+                ret,threshg = cv2.threshold(img2[:,:,1],190,255,cv2.THRESH_BINARY)
+                ret,threshr = cv2.threshold(img2[:,:,2],190,255,cv2.THRESH_BINARY)
+                summed=threshb+threshg+threshr
+                value=-np.max(np.argmax(summed,axis=1))
+                
                 img = cv2.resize(img, (width, new_height), interpolation = cv2.INTER_AREA)
                 img = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
                 #img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
