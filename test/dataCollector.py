@@ -56,7 +56,7 @@ if __name__ == '__main__':
     key_ins = np.zeros(shape=(save_batch_size, 11), dtype=np.uint8)
     ratio = 240 / 2048
     new_height = int(1152 * ratio)
-    images = np.zeros(shape=(save_batch_size, new_height, 240, 3), dtype=np.uint8)
+    images = np.zeros(shape=(save_batch_size, new_height, 240), dtype=np.uint8)
 
     #time.sleep(5)
     with mss.mss() as sct:
@@ -70,7 +70,7 @@ if __name__ == '__main__':
                 img = np.array(sct.grab(monitor))
 
                 img = cv2.resize(img, (240, new_height), interpolation = cv2.INTER_AREA)
-                img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+                img = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
                 images[count - init_count] = img
                 #cv2.imwrite(f'{folderString}/img{count}.png', img)
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
                     np.save(f'{folderString}/{init_count}_{count}', key_ins)
                     np.save(f'{folderString}/img{init_count}_{count}', images)
                     key_ins = np.zeros(shape=(save_batch_size, 11), dtype=np.uint8)
-                    images = np.zeros(shape=(save_batch_size, new_height, 240, 3), dtype=np.uint8)
+                    images = np.zeros(shape=(save_batch_size, new_height, 240), dtype=np.uint8)
                     init_count = count
 
         except KeyboardInterrupt:
