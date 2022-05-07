@@ -1,4 +1,3 @@
-from re import L
 import time
 import cv2
 import mss
@@ -35,8 +34,8 @@ def key_check():
 
 def end():
     print("Done")
-    ending=time.time()
-    duration=ending-init
+    ending = time.time()
+    duration = ending - init
     print(f'Average FPS: {count/duration}')
 
 
@@ -63,7 +62,7 @@ if __name__ == '__main__':
         temp = 1
         while os.path.isdir(path):
             path = os.path.join(os.getcwd(), folderString + str(temp))   
-            temp+=1
+            temp += 1
         folderString += str(temp-1)
         path = os.path.join(os.getcwd(), folderString)   
         os.mkdir(path)
@@ -71,11 +70,12 @@ if __name__ == '__main__':
     init_count = 0
     save_batch_size = 100
     key_ins = np.zeros(shape=(save_batch_size, 11), dtype=np.uint8)
-    ratio = 240 / 2048
-    new_height = int(1152 * ratio)
-    images = np.zeros(shape=(save_batch_size, new_height, 240), dtype=np.uint8)
-    init=time.time()
-    #time.sleep(5)
+    width = 244
+    #ratio =  width / 2048
+    new_height = 138 #int(1152 * ratio)
+    images = np.zeros(shape=(save_batch_size, new_height, width), dtype=np.uint8)
+    time.sleep(5)
+    init = time.time()
     with mss.mss() as sct:
         try:
             count = 0
@@ -86,8 +86,9 @@ if __name__ == '__main__':
                 # Get raw pixels from the screen, save it to a Numpy array
                 img = np.array(sct.grab(monitor))
 
-                img = cv2.resize(img, (240, new_height), interpolation = cv2.INTER_AREA)
+                img = cv2.resize(img, (width, new_height), interpolation = cv2.INTER_AREA)
                 img = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
+                #img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
                 images[count - init_count] = img
                 #cv2.imwrite(f'{folderString}/img{count}.png', img)
 
@@ -99,7 +100,7 @@ if __name__ == '__main__':
                     np.save(f'{folderString}/{init_count}_{count}', key_ins)
                     np.save(f'{folderString}/img{init_count}_{count}', images)
                     key_ins = np.zeros(shape=(save_batch_size, 11), dtype=np.uint8)
-                    images = np.zeros(shape=(save_batch_size, new_height, 240), dtype=np.uint8)
+                    images = np.zeros(shape=(save_batch_size, new_height, width), dtype=np.uint8)
                     init_count = count
 
         except KeyboardInterrupt:
