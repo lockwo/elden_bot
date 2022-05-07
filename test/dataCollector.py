@@ -1,3 +1,4 @@
+from re import L
 import time
 import cv2
 import mss
@@ -32,6 +33,13 @@ def key_check():
             keys.append(" ")
     return keys
 
+def end():
+    print("Done")
+    ending=time.time()
+    duration=ending-init
+    print(f'Average FPS: {count/duration}')
+
+
 
 def keys_to_array(keys):
     # [W, A, S, D, F, R, U, I, O, P, SPACE]
@@ -48,7 +56,16 @@ if __name__ == '__main__':
         folderString = "test_images"
         
     path = os.path.join(os.getcwd(), folderString)
+    
     if not os.path.isdir(path):
+        os.mkdir(path)
+    else:
+        temp = 1
+        while os.path.isdir(path):
+            path = os.path.join(os.getcwd(), folderString + str(temp))   
+            temp+=1
+        folderString += str(temp-1)
+        path = os.path.join(os.getcwd(), folderString)   
         os.mkdir(path)
     
     init_count = 0
@@ -57,7 +74,7 @@ if __name__ == '__main__':
     ratio = 240 / 2048
     new_height = int(1152 * ratio)
     images = np.zeros(shape=(save_batch_size, new_height, 240), dtype=np.uint8)
-
+    init=time.time()
     #time.sleep(5)
     with mss.mss() as sct:
         try:
@@ -86,4 +103,4 @@ if __name__ == '__main__':
                     init_count = count
 
         except KeyboardInterrupt:
-            print("Done")
+            end()

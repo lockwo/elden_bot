@@ -2,33 +2,45 @@ import time
 import cv2
 import mss
 import numpy as np
+import sys
 
 def index_to_key(inds):
-    vals = ["W", "A", "S", "D", "F", "R", "U", "I", "O", "P", " "]
-    keys = []
-    for i in range(len(inds)):
-    	if inds[i] == 1:
-    		keys.append(vals[i])
-    return keys
+	vals = ["W", "A", "S", "D", "F", "R", "U", "I", "O", "P", " "]
+	keys = []
+	for i in range(len(inds)):
+		if inds[i] == 1:
+			keys.append(vals[i])
+	return keys
 
-batch = 100
-init = 0
-end = batch
-for i in range(1000):
-	if i == init:
-		ins = np.load(f'test_images/{init}_{end}.npy')
-		images = np.load(f'test_images/img{init}_{end}.npy')
-	if i == end:
-		init += 100
-		end += 100
-		ins = np.load(f'test_images/{init}_{end}.npy')
-		images = np.load(f'test_images/img{init}_{end}.npy')
+if __name__ == '__main__':
+	if len(sys.argv) > 1:
+		folderString = sys.argv[1]
+	else:
+		folderString = "test_images"
+	batch = 100
+	init = 0
+	end = batch
+	i=0
+	while True:
+		try:
+			if i == init:
+				ins = np.load(f'{folderString}/{init}_{end}.npy')
+				images = np.load(f'{folderString}/img{init}_{end}.npy')
+			if i == end:
+				init += 100
+				end += 100
+				ins = np.load(f'{folderString}/{init}_{end}.npy')
+				images = np.load(f'{folderString}/img{init}_{end}.npy')
+		except FileNotFoundError:
+			print("End of Playback")
+			break
 
-	keys = index_to_key(ins[i - init])
-	print(keys)
-	img = images[i - init]
-	cv2.imshow('test', img)
-	#input()
-	if cv2.waitKey(25) & 0xFF == ord('q'):
-		cv2.destroyAllWindows()
-		break
+		keys = index_to_key(ins[i - init])
+		print(keys)
+		img = images[i - init]
+		cv2.imshow('test', img)
+		#input()
+		i+=1
+		if cv2.waitKey(25) & 0xFF == ord('q'):
+			cv2.destroyAllWindows()
+			break
