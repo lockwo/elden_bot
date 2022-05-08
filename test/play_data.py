@@ -14,7 +14,7 @@ if __name__ == '__main__':
 	if len(sys.argv) > 1:
 		folderString = sys.argv[1]
 	else:
-		folderString = "test_images"
+		folderString = "test_images1"
 	batch = 100
 	init = 0
 	end = batch
@@ -24,17 +24,19 @@ if __name__ == '__main__':
 			if i == init:
 				ins = np.load(f'{folderString}/{init}_{end}.npy')
 				images = np.load(f'{folderString}/img{init}_{end}.npy')
+				rewards = np.load(f'{folderString}/r{init}_{end}.npy')
 			if i == end:
 				init += 100
 				end += 100
 				ins = np.load(f'{folderString}/{init}_{end}.npy')
 				images = np.load(f'{folderString}/img{init}_{end}.npy')
+				rewards = np.load(f'{folderString}/r{init}_{end}.npy')
 		except FileNotFoundError:
 			print("End of Playback")
 			break
 
 		keys = index_to_key(ins[i - init])
-		print(keys)
+		print(keys, rewards[i - init])
 		img = images[i - init]
 		cv2.imshow('test', img)
 		#input()
