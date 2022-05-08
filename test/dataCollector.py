@@ -74,10 +74,13 @@ if __name__ == '__main__':
     #ratio =  width / 2048
     new_height = 138 #int(1152 * ratio)
     images = np.zeros(shape=(save_batch_size, new_height, width), dtype=np.uint8)
+    rewards = np.zeros(shape=(save_batch_size, 1), dtype=np.float16)
     left=908
     down=495
     width2=8
     height=1067
+
+    max_health = None
     
     time.sleep(5)
     init = time.time()
@@ -91,13 +94,16 @@ if __name__ == '__main__':
                 # Get raw pixels from the screen, save it to a Numpy array
                 img = np.array(sct.grab(monitor))
                 
-                img2=img[left:left+width,down:down+height]
+                img2 = img[left:left+width,down:down+height]
                 ret,threshb = cv2.threshold(img2[:,:,0],190,255,cv2.THRESH_BINARY)
                 ret,threshg = cv2.threshold(img2[:,:,1],190,255,cv2.THRESH_BINARY)
                 ret,threshr = cv2.threshold(img2[:,:,2],190,255,cv2.THRESH_BINARY)
-                summed=threshb+threshg+threshr
-                value=-np.max(np.argmax(summed,axis=1))
-                
+                summed = threshb+threshg+threshr
+                value = np.max(np.argmax(summed,axis=1))
+                if count == 0:
+                    max_health = value
+
+                value = -value/max_health
                 img = cv2.resize(img, (width, new_height), interpolation = cv2.INTER_AREA)
                 img = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
                 #img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
@@ -107,12 +113,16 @@ if __name__ == '__main__':
                 keys = key_check()
                 key_ins[count - init_count] = keys_to_array(keys)
 
+                rewards[count - init_count] = value
+
                 count += 1
                 if count % save_batch_size == 0 and count > 10:
                     np.save(f'{folderString}/{init_count}_{count}', key_ins)
                     np.save(f'{folderString}/img{init_count}_{count}', images)
+                    np.save(f'{folderString}/r{init_count}_{count}', rewards)
                     key_ins = np.zeros(shape=(save_batch_size, 11), dtype=np.uint8)
                     images = np.zeros(shape=(save_batch_size, new_height, width), dtype=np.uint8)
+                    rewards = np.zeros(shape=(save_batch_size, 1), dtype=np.float16)
                     init_count = count
 
         except KeyboardInterrupt:
