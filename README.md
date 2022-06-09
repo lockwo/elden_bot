@@ -5,3 +5,7 @@ This repository contains the work in progress code for Elden Bot. Elden Bot is a
 Experiment tracking can be found here: https://wandb.ai/elden_ring_ai/supervised_runs
 
 Until we encounter some success, the repo will be limited to the test folder. 
+
+## Contributing
+
+We welcome contributors, we have a [discord](https://discord.gg/P7vZdbgn6R) for ideas, contributions, etc. You can also raise issues or PRs on this repo. 
