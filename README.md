@@ -6,6 +6,10 @@ Experiment tracking can be found here: https://wandb.ai/elden_ring_ai/supervised
 
 Until we encounter some success, the repo will be limited to the test folder. 
 
+## Dependencies of Note:
+
+MSS, pyautogui, pydirectinput, win32api
+
 ## Contributing
 
 We welcome contributors, we have a [discord](https://discord.gg/P7vZdbgn6R) for ideas, contributions, etc. You can also raise issues or PRs on this repo. 
