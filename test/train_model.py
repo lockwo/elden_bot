@@ -1,28 +1,31 @@
 import tensorflow as tf
 #from tensorflow.keras.applications.efficientnet import EfficientNetB2
 #from tensorflow.keras.applications.resnet50 import ResNet50
-from tensorflow.keras.applications.inception_v3 import InceptionV3
+#from tensorflow.keras.applications.inception_v3 import InceptionV3
 import time 
 import numpy as np
 import wandb
 from wandb.keras import WandbCallback
+import os 
+
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 actions = ["W", "A", "S", "D", "F", "R", "U", "I", "O", "P", " "]
 num_actions = len(actions)
 
-num_runs = 14
+num_runs = 32
 folderStrings = ["test_images"]
 for i in range(1, num_runs + 1):
 	folderStrings.append(f'test_images{i}')
 
-batch = 100
-init = 0
-end = batch
-i = 0
 data = []
 labels = []
 
 for folderString in folderStrings:
+	batch = 100
+	init = 0
+	end = batch
+	i = 0
 	while True:
 		try:
 			if i == init:
@@ -41,21 +44,30 @@ for folderString in folderStrings:
 
 data = np.vstack(data)
 labels = np.vstack(labels)
+print(data.shape)
+# (batch, height, width, new_axis)
 data = np.expand_dims(data, axis=-1).transpose(0, 2, 1, 3)
 # Frame stacking
+# (0, 1, 2, 3, 4)
+# ((0, 0, 0), (0, 1, 1), (0, 1, 2), (1, 2, 3), (2, 3, 4))
+# data1 = (0, 0, 1, 2, 3)
+# data2 = (0, 0, 0, 1, 2)
+# inter = ((0, 0), (0, 1), (1))
 data1 = np.concatenate((np.array([data[0]]), data[:-1]), axis=0)
 data2 = np.concatenate((np.array([data[0]]), data[:-1]), axis=0)
-data = np.concatenate((np.concatenate((data, data1), axis=-1), data2), axis=-1)
+data = np.concatenate((np.concatenate((data2, data1), axis=-1), data), axis=-1)
+
 
 data = tf.random.shuffle(data, seed=42)
 labels = tf.random.shuffle(labels, seed=42)
+print(data.shape)
 
 params = {}
 params["learning_rate"] = 3e-4
 params["epochs"] = 1000
-params["split"] = 19/20
-params["batch_size"] = 64
-params["shuffle"] = 200 * num_runs
+params["split"] = 9/10
+params["batch_size"] = 128
+params["shuffle"] = 100 * num_runs
 params["base_model"] = "custom"
 
 split = int(params["split"] * len(data))
@@ -82,20 +94,19 @@ model = tf.keras.models.Model(inputs=inputs, outputs=x)
 '''
 
 init = tf.keras.initializers.VarianceScaling(scale=2)
-x = tf.keras.layers.Conv2D(32, 8, strides=(4,4), activation='elu', kernel_initializer=init)(inputs)
-x = tf.keras.layers.Conv2D(64, 4, strides=(3,3), activation='elu', kernel_initializer=init)(x)
-x = tf.keras.layers.Conv2D(64, 3, strides=(1,1), activation='elu', kernel_initializer=init)(x)
-x = tf.keras.layers.Conv2D(128, 3, strides=(1,1), activation='elu')(x)
+x = tf.keras.layers.Conv2D(32, 8, strides=(4,4), activation='relu', kernel_initializer=init)(inputs)
+x = tf.keras.layers.Conv2D(64, 4, strides=(3,3), activation='relu', kernel_initializer=init)(x)
+x = tf.keras.layers.Conv2D(64, 3, strides=(1,1), activation='relu', kernel_initializer=init)(x)
+#x = tf.keras.layers.Conv2D(128, 3, strides=(1,1), activation='relu')(x)
 x = tf.keras.layers.Flatten()(x)
 x = tf.keras.layers.Dropout(0.3)(x)
-x = tf.keras.layers.Dense(1024, activation='elu', kernel_initializer=init)(x)
-x = tf.keras.layers.Dropout(0.3)(x)
-x = tf.keras.layers.Dense(512, activation='elu', kernel_initializer=init)(x)
+#x = tf.keras.layers.Dense(1024, activation='relu', kernel_initializer=init)(x)
+#x = tf.keras.layers.Dropout(0.3)(x)
+x = tf.keras.layers.Dense(512, activation='relu', kernel_initializer=init)(x)
 x = tf.keras.layers.Dropout(0.3)(x)
 x = tf.keras.layers.Dense(num_actions, activation='sigmoid')(x)
 model = tf.keras.models.Model(inputs=inputs, outputs=x)
 model.summary()
-
 
 opt = tf.keras.optimizers.Adam(learning_rate=params["learning_rate"])
 loss = tf.keras.losses.BinaryCrossentropy()
@@ -103,11 +114,9 @@ metrics = ['accuracy']
 
 model.compile(optimizer=opt, loss=loss, metrics=metrics)
 
-wandb.init(project="supervised_runs", entity="elden_ring_ai")
-wandb.run.name = "supervised_small_nol2_test1"
-wandb.run.save()
+wandb.init(project="supervised_runs", entity="elden_ring_ai", name="video_example1")
 
-checkpoint_filepath = './checkpoints'
+checkpoint_filepath = './video_test/checkpoint'
 callbacks = [
     tf.keras.callbacks.EarlyStopping(
         # Stop training when `val_loss` is no longer improving
@@ -133,4 +142,9 @@ callbacks = [
     WandbCallback()
 ]
 
-model.fit(train_dataset, epochs=params["epochs"], validation_data=test_dataset, callbacks=callbacks)
+#actions = ["W", "A", "S", "D", "F", "R", "U", "I", "O", "P", " "]
+weights = [1/(np.sum(labels[:,i]) + 1) * labels.shape[0] for i in range(len(labels[0]))]
+print(weights)
+class_weight = {i: weights[i] for i in range(len(weights))}
+
+model.fit(train_dataset, epochs=params["epochs"], validation_data=test_dataset, callbacks=callbacks, class_weight=class_weight)
