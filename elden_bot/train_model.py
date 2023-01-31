@@ -3,12 +3,10 @@ import tensorflow as tf
 # from tensorflow.keras.applications.efficientnet import EfficientNetB2
 # from tensorflow.keras.applications.resnet50 import ResNet50
 # from tensorflow.keras.applications.inception_v3 import InceptionV3
-import time
 import numpy as np
 import wandb
 from wandb.keras import WandbCallback
-import os
-
+# import os
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 actions = ["W", "A", "S", "D", "F", "R", "U", "I", "O", "P", " "]
