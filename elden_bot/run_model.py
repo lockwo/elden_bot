@@ -3,15 +3,9 @@ import time
 import cv2
 import mss
 import numpy as np
-import sys
 import os
-import keyboard
-import win32api as wapi
-import time
 from collections import deque
-import pyautogui
 import pydirectinput
-import tensorflow as tf
 
 # Better performance
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
